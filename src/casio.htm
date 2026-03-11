@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retro Casio Calculator</title>
+  <link href="https://fonts.cdnfonts.com/css/seven-segment" rel="stylesheet">
+  
+  <style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+
+  /* The Silver Case */
+  .calculator {
+    background: linear-gradient(145deg, #bdc3c7, #95a5a6);
+    padding: 25px;
+    border-radius: 8px;
+    width: 320px;
+    box-shadow: 10px 10px 20px #888, -5px -5px 15px #fff;
+    border: 2px solid #7f8c8d;
+  }
+
+  /* 7-Segment LCD Display */
+  .display-container {
+    background-color: #9ea98f; /* Classic greenish-grey LCD */
+    padding: 10px;
+    border: 4px inset #7f8c8d;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+
+  .display {
+    width: 100%;
+    height: 50px;
+    border: none;
+    background: transparent;
+    color: #2c3e50;
+    font-family: 'Seven Segment', sans-serif;
+    font-size: 40px;
+    text-align: right;
+    box-sizing: border-box;
+  }
+
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 12px;
+  }
+
+  /* Standard Number Buttons */
+  button {
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #555; /* Grey buttons */
+    color: white;
+    box-shadow: 0px 4px 0px #222;
+    transition: all 0.1s;
+  }
+
+  button:active {
+    box-shadow: 0px 0px 0px #222;
+    transform: translateY(4px);
+  }
+
+  /* Functional Color Coding */
+  .op-key {
+    background-color: #333; /* Darker grey for math */
+  }
+
+  .clear-key {
+    background-color: #c0392b; /* Retro Red for AC/DEL */
+  }
+
+  .equal-key {
+    background-color: #d35400; /* Orange/Red for Equals */
+  }
+
+  /* Casio Logo style text */
+  .brand {
+    font-size: 12px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-style: italic;
+  }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <div class="brand">ELECTRONIC CALCULATOR</div>
+    <div class="display-container">
+      <input type="text" class="display" id="display" value="0" disabled>
+    </div>
+    
+    <div class="keys">
+      <button class="button clear-key">AC</button>
+      <button class="button clear-key">DEL</button>
+      <button class="button op-key">%</button>
+      <button class="button op-key">/</button>
+      
+      <button class="button">7</button>
+      <button class="button">8</button>
+      <button class="button">9</button>
+      <button class="button op-key">*</button>
+      
+      <button class="button">4</button>
+      <button class="button">5</button>
+      <button class="button">6</button>
+      <button class="button op-key">-</button>
+      
+      <button class="button">1</button>
+      <button class="button">2</button>
+      <button class="button">3</button>
+      <button class="button op-key">+</button>
+      
+      <button class="button">0</button>
+      <button class="button">00</button>
+      <button class="button">.</button>
+      <button class="button equal-key">=</button>
+    </div>
+  </div>
+
+  <script>
+    let display = document.getElementById('display');
+    let buttons = document.querySelectorAll('.button');
+    let string = '';
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        let val = e.target.innerHTML;
+
+        if (val == 'DEL') {
+          string = string.substring(0, string.length - 1);
+          display.value = string || '0';
+        } 
+        else if (val == 'AC') {
+          string = '';
+          display.value = '0';
+        } 
+        else if (val == '=') {
+          try {
+            // Replace 'x' with '*' for eval
+            let query = string.replace(/x/g, '*');
+            string = eval(query).toString();
+            display.value = string;
+          } catch (error) {
+            display.value = 'ERROR';
+            string = '';
+          }
+        } 
+        else {
+          // Prevent multiple leading zeros
+          if (string === '' && (val === '0' || val === '00')) return;
+          
+          string += val;
+          display.value = string;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

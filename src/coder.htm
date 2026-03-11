@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Editor Pro</title>
+    <style>
+        :root {
+            --bg: #1e1e1e;
+            --panel: #252526;
+            --accent: #007acc;
+            --text: #d4d4d4;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav {
+            background-color: var(--panel);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .logo { font-weight: bold; margin-right: 20px; color: var(--accent); }
+
+        button, label.btn {
+            background: #333;
+            color: white;
+            border: 1px solid #444;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        button:hover, label.btn:hover { background: #444; }
+        .btn-primary { background: var(--accent); border: none; }
+        .btn-primary:hover { background: #0062a3; }
+
+        /* Hide the actual file input */
+        #file-input { display: none; }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background-color: var(--bg);
+            color: #9cdcfe;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+
+        iframe {
+            flex: 1;
+            background-color: white;
+            border: none;
+            border-left: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <span class="logo">HTML_DEV //</span>
+        
+        <label for="file-input" class="btn">Import File</label>
+        <input type="file" id="file-input" accept=".html,.txt,.css" onchange="importFile(this)">
+        
+        <button onclick="saveToLocal()">Save (Local)</button>
+        <button onclick="loadFromLocal()">Load Last</button>
+        <button onclick="exportFile()">Export .HTML</button>
+        <button class="btn-primary" onclick="openPreview()">Open in about:blank</button>
+    </nav>
+
+    <div class="container">
+        <textarea id="code-editor" spellcheck="false" placeholder="Start coding or import a file..."></textarea>
+        <iframe id="preview"></iframe>
+    </div>
+
+    <script>
+        const editor = document.getElementById('code-editor');
+        const preview = document.getElementById('preview');
+
+        function updatePreview() {
+            const content = editor.value;
+            const doc = preview.contentDocument || preview.contentWindow.document;
+            doc.open();
+            doc.write(content);
+            doc.close();
+        }
+
+        editor.addEventListener('input', updatePreview);
+
+        // --- NEW: Import Function ---
+        function importFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editor.value = e.target.result;
+                updatePreview();
+                // Reset input so the same file can be uploaded again if needed
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('saved_html_code', editor.value);
+            alert("Code saved to browser storage!");
+        }
+
+        function loadFromLocal() {
+            const saved = localStorage.getItem('saved_html_code');
+            if (saved) {
+                editor.value = saved;
+                updatePreview();
+            }
+        }
+
+        function exportFile() {
+            const blob = new Blob([editor.value], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function openPreview() {
+            const newWindow = window.open('about:blank', '_blank');
+            if (newWindow) {
+                newWindow.document.write(editor.value);
+                newWindow.document.close();
+            }
+        }
+
+        // Default text
+        editor.value = "<h1>Ready to code</h1>\n<p>Import a file to begin.</p>";
+        updatePreview();
+    </script>
+</body>
+</html>
