@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-It Notes</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --note-yellow: #feff9c;
+            --note-blue: #7afaff;
+            --note-pink: #ff7eb9;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #444;
+            margin-bottom: 30px;
+        }
+
+        .controls button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+
+        .controls button:active { transform: scale(0.95); }
+
+        /* The Note Grid */
+        #notes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 250px);
+            gap: 30px;
+            justify-content: center;
+        }
+
+        /* Individual Sticky Note */
+        .note {
+            background-color: var(--note-yellow);
+            width: 250px;
+            min-height: 250px;
+            padding: 15px;
+            box-sizing: border-box;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+            color: #333;
+            position: relative;
+            transform: rotate(-1deg);
+            transition: transform 0.2s;
+        }
+
+        .note:nth-child(even) { transform: rotate(2deg); }
+        .note:hover { transform: scale(1.05) rotate(0deg); z-index: 10; }
+
+        .note textarea {
+            background: transparent;
+            border: none;
+            width: 100%;
+            height: 180px;
+            resize: none;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 18px;
+            outline: none;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            display: none;
+        }
+
+        .note:hover .delete-btn { display: block; }
+        .delete-btn:hover { background: #e74c3c; color: white; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>My Sticky Notes</h1>
+        <div class="controls">
+            <button onclick="addNote()">+ Add Note</button>
+        </div>
+    </header>
+
+    <div id="notes-container"></div>
+
+    <script>
+        const container = document.getElementById('notes-container');
+
+        // Load notes on startup
+        getNotes().forEach(note => {
+            const noteElement = createNoteElement(note.id, note.content);
+            container.appendChild(noteElement);
+        });
+
+        function getNotes() {
+            return JSON.parse(localStorage.getItem('sticky-notes') || '[]');
+        }
+
+        function saveNotes(notes) {
+            localStorage.setItem('sticky-notes', JSON.stringify(notes));
+        }
+
+        function createNoteElement(id, content) {
+            const element = document.createElement('div');
+            element.classList.add('note');
+            
+            element.innerHTML = `
+                <button class="delete-btn">&times;</button>
+                <textarea placeholder="Empty note...">${content}</textarea>
+            `;
+
+            const textarea = element.querySelector('textarea');
+            const deleteBtn = element.querySelector('.delete-btn');
+
+            // Save when typing
+            textarea.addEventListener('input', () => {
+                updateNote(id, textarea.value);
+            });
+
+            // Delete logic
+            deleteBtn.addEventListener('click', () => {
+                const doDelete = confirm("Are you sure you want to delete this note?");
+                if (doDelete) {
+                    deleteNote(id, element);
+                }
+            });
+
+            return element;
+        }
+
+        function addNote() {
+            const notes = getNotes();
+            const noteObj = {
+                id: Math.floor(Math.random() * 100000),
+                content: ""
+            };
+
+            const noteElement = createNoteElement(noteObj.id, noteObj.content);
+            container.appendChild(noteElement);
+
+            notes.push(noteObj);
+            saveNotes(notes);
+        }
+
+        function updateNote(id, newContent) {
+            const notes = getNotes();
+            const targetNote = notes.filter(n => n.id == id)[0];
+            targetNote.content = newContent;
+            saveNotes(notes);
+        }
+
+        function deleteNote(id, element) {
+            const notes = getNotes().filter(n => n.id != id);
+            saveNotes(notes);
+            container.removeChild(element);
+        }
+    </script>
+</body>
+</html>
